@@ -2,12 +2,66 @@
 
 This repository contains a collection of scripts and utilities designed to assist with the migration to Fabric, covering various workloads.
 
+## 🚀 Quick Start: Azure Dedicated Pool to Fabric Warehouse
+
+**New!** Complete migration guide with Python/Bash scripts (no PowerShell required):
+
+1. **[📘 Migration Guide](MIGRATION_GUIDE.md)** - Comprehensive step-by-step guide
+2. **[🔄 Data Type Mapping](DATATYPE_MAPPING.md)** - Handle datatype differences between platforms
+3. **[🔐 Permissions Guide](PERMISSIONS_GUIDE.md)** - Setup all required permissions
+4. **[⚡ Quick Start](QUICK_START.md)** - Get started in 15 minutes
+
+### Migration Scripts (Python + Bash)
+
+All migration scripts are located in the [`/scripts`](scripts/) directory:
+
+```bash
+# 1. Setup environment
+cd scripts
+./setup_environment.sh
+
+# 2. Run pre-migration checks
+./pre_migration_checks.sh
+
+# 3. Extract data from Azure Dedicated Pool
+python3 extract_data.py \
+    --server mysynapse.sql.azuresynapse.net \
+    --database mydatabase \
+    --storage-account mystorageaccount \
+    --container migration-staging \
+    --parallel-jobs 6
+
+# 4. Load data to Fabric Warehouse
+python3 load_data.py \
+    --workspace myworkspace \
+    --warehouse mywarehouse \
+    --storage-account mystorageaccount \
+    --container migration-staging \
+    --parallel-jobs 8 \
+    --validate-rows
+
+# 5. Validate migration
+python3 validate_migration.py \
+    --source-server mysynapse.sql.azuresynapse.net \
+    --source-database mydatabase \
+    --target-workspace myworkspace \
+    --target-warehouse mywarehouse \
+    --generate-report
+```
+
+See [scripts/README.md](scripts/README.md) for detailed documentation.
+
+---
+
 ## From Azure Synapse to Fabric
 
 ### Data Warehouse
 
-- [Dedicated Pools to Fabric migration guidance documentation](https://aka.ms/fabric-migrate-synapse-dw)
-- [Scripts and utils](/data-warehouse)
+- **[NEW] [Comprehensive Migration Guide](MIGRATION_GUIDE.md)** - Complete guide with scripts
+- **[NEW] [Data Type Mapping Guide](DATATYPE_MAPPING.md)** - Datatype compatibility reference
+- **[NEW] [Permissions Guide](PERMISSIONS_GUIDE.md)** - Security and access setup
+- [Official Microsoft documentation](https://aka.ms/fabric-migrate-synapse-dw)
+- [Existing PowerShell scripts and utils](/data-warehouse)
 
 ### Data Engineering (Spark)
 
