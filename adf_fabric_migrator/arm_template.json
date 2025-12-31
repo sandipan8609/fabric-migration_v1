@@ -1,0 +1,485 @@
+{
+    "name": "GENERIC_MKTG_LOADDATA_PP",
+    "properties": {
+        "activities": [
+            {
+                "name": "Copydata1",
+                "type": "Copy",
+                "dependsOn": [
+                    {
+                        "activity": "ForEach1",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "policy": {
+                    "timeout": "7.00:00:00",
+                    "retry": 3,
+                    "retryIntervalInSeconds": 30,
+                    "secureOutput": false,
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "source": {
+                        "type": "DelimitedTextSource",
+                        "storeSettings": {
+                            "type": "AzureBlobStorageReadSettings",
+                            "recursive": true,
+                            "modifiedDatetimeStart": {
+                                "value": "@variables('maxtime')",
+                                "type": "Expression"
+                            },
+                            "wildcardFileName": {
+                                "value": "@pipeline().parameters.fileName",
+                                "type": "Expression"
+                            }
+                        },
+                        "formatSettings": {
+                            "type": "DelimitedTextReadSettings"
+                        }
+                    },
+                    "sink": {
+                        "type": "DelimitedTextSink",
+                        "storeSettings": {
+                            "type": "AzureBlobFSWriteSettings"
+                        },
+                        "formatSettings": {
+                            "type": "DelimitedTextWriteSettings",
+                            "quoteAllText": true,
+                            "fileExtension": ".txt"
+                        }
+                    },
+                    "enableStaging": false,
+                    "translator": {
+                        "type": "TabularTranslator",
+                        "typeConversion": true,
+                        "typeConversionSettings": {
+                            "allowDataTruncation": true,
+                            "treatBooleanAsNumber": false
+                        }
+                    }
+                },
+                "inputs": [
+                    {
+                        "referenceName": "SBM_MKTG_GL_SRC_DATASET",
+                        "type": "DatasetReference",
+                        "parameters": {
+                            "containerName": {
+                                "value": "@pipeline().parameters.containerName",
+                                "type": "Expression"
+                            }
+                        }
+                    }
+                ],
+                "outputs": [
+                    {
+                        "referenceName": "SBM_MKTG_GL_SINK_DATASET",
+                        "type": "DatasetReference",
+                        "parameters": {
+                            "destinationpath": {
+                                "value": "@pipeline().parameters.destinationPath",
+                                "type": "Expression"
+                            }
+                        }
+                    }
+                ]
+            },
+            {
+                "name": "GetMetadata",
+                "type": "GetMetadata",
+                "dependsOn": [],
+                "policy": {
+                    "timeout": "7.00:00:00",
+                    "retry": 0,
+                    "retryIntervalInSeconds": 30,
+                    "secureOutput": false,
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "dataset": {
+                        "referenceName": "SBM_MKTG_GL_SRC_DATASET",
+                        "type": "DatasetReference",
+                        "parameters": {
+                            "containerName": {
+                                "value": "@pipeline().parameters.containerName",
+                                "type": "Expression"
+                            }
+                        }
+                    },
+                    "fieldList": [
+                        "childItems",
+                        "lastModified"
+                    ],
+                    "storeSettings": {
+                        "type": "AzureBlobStorageReadSettings",
+                        "recursive": true
+                    },
+                    "formatSettings": {
+                        "type": "DelimitedTextReadSettings"
+                    }
+                }
+            },
+            {
+                "name": "If Condition1",
+                "type": "IfCondition",
+                "dependsOn": [
+                    {
+                        "activity": "Copydata1",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "userProperties": [],
+                "typeProperties": {
+                    "expression": {
+                        "value": "@equals(activity('Copydata1').output.filesRead,0)",
+                        "type": "Expression"
+                    },
+                    "ifFalseActivities": [
+                        {
+                            "name": "SendSuccessEmailSMTP",
+                            "type": "DatabricksNotebook",
+                            "dependsOn": [],
+                            "policy": {
+                                "timeout": "7.00:00:00",
+                                "retry": 0,
+                                "retryIntervalInSeconds": 30,
+                                "secureOutput": false,
+                                "secureInput": false
+                            },
+                            "userProperties": [],
+                            "typeProperties": {
+                                "notebookPath": "/Shared/SMTPMailSystem/Gen_SMTP_SUCCESS_MAIL",
+                                "baseParameters": {
+                                    "DataFactoryName": {
+                                        "value": "@pipeline().DataFactory",
+                                        "type": "Expression"
+                                    },
+                                    "PipeLineName": {
+                                        "value": "@{pipeline().Pipeline}",
+                                        "type": "Expression"
+                                    },
+                                    "FilenameContainer": {
+                                        "value": "@pipeline().parameters.containerName",
+                                        "type": "Expression"
+                                    },
+                                    "Message": "Data successfully moved from BLOB to ADLS-Gen2 RAW",
+                                    "Erormessage": "NA",
+                                    "Subject": {
+                                        "value": "ADF Data-movement successful for @{pipeline().parameters.containerName}",
+                                        "type": "Expression"
+                                    },
+                                    "DataRead": {
+                                        "value": "@{activity('Copydata1').output.dataRead} KB",
+                                        "type": "Expression"
+                                    },
+                                    "DataWritten": {
+                                        "value": "@{activity('Copydata1').output.dataWritten} KB",
+                                        "type": "Expression"
+                                    },
+                                    "Copyduration": {
+                                        "value": "@{activity('Copydata1').output.copyDuration} Sec",
+                                        "type": "Expression"
+                                    }
+                                }
+                            },
+                            "linkedServiceName": {
+                                "referenceName": "SBM_MKTG_DB_LINKEDSERVICE",
+                                "type": "LinkedServiceReference"
+                            }
+                        }
+                    ],
+                    "ifTrueActivities": [
+                        {
+                            "name": "SendFailEmailSMTP_copy1_copy1",
+                            "type": "DatabricksNotebook",
+                            "dependsOn": [],
+                            "policy": {
+                                "timeout": "7.00:00:00",
+                                "retry": 0,
+                                "retryIntervalInSeconds": 30,
+                                "secureOutput": false,
+                                "secureInput": false
+                            },
+                            "userProperties": [],
+                            "typeProperties": {
+                                "notebookPath": "/Shared/SMTPMailSystem/Gen_SMTP_FAILURE_MAIL",
+                                "baseParameters": {
+                                    "DataFactoryName": {
+                                        "value": "@pipeline().DataFactory",
+                                        "type": "Expression"
+                                    },
+                                    "PipeLineName": {
+                                        "value": "@{pipeline().Pipeline}",
+                                        "type": "Expression"
+                                    },
+                                    "FilenameContainer": {
+                                        "value": "@pipeline().parameters.containerName",
+                                        "type": "Expression"
+                                    },
+                                    "Message": "The ADF pipeline has crashed! Please check the logs",
+                                    "errormessage": "No File available for current date",
+                                    "Subject": {
+                                        "value": "No File available ! in @{pipeline().parameters.containerName}",
+                                        "type": "Expression"
+                                    }
+                                }
+                            },
+                            "linkedServiceName": {
+                                "referenceName": "SBM_MKTG_DB_LINKEDSERVICE",
+                                "type": "LinkedServiceReference"
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "name": "ForEach1",
+                "type": "ForEach",
+                "dependsOn": [
+                    {
+                        "activity": "GetMetadata",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "userProperties": [],
+                "typeProperties": {
+                    "items": {
+                        "value": "@activity('GetMetadata').output.childitems",
+                        "type": "Expression"
+                    },
+                    "isSequential": true,
+                    "activities": [
+                        {
+                            "name": "FileMetadata",
+                            "type": "GetMetadata",
+                            "dependsOn": [],
+                            "policy": {
+                                "timeout": "7.00:00:00",
+                                "retry": 0,
+                                "retryIntervalInSeconds": 30,
+                                "secureOutput": false,
+                                "secureInput": false
+                            },
+                            "userProperties": [],
+                            "typeProperties": {
+                                "dataset": {
+                                    "referenceName": "SBM_MKTG_GL_SRC3_DATASET",
+                                    "type": "DatasetReference",
+                                    "parameters": {
+                                        "filepath": {
+                                            "value": "@pipeline().parameters.containerName",
+                                            "type": "Expression"
+                                        }
+                                    }
+                                },
+                                "fieldList": [
+                                    "lastModified",
+                                    "itemName"
+                                ],
+                                "storeSettings": {
+                                    "type": "AzureBlobStorageReadSettings",
+                                    "recursive": true
+                                },
+                                "formatSettings": {
+                                    "type": "DelimitedTextReadSettings"
+                                }
+                            }
+                        },
+                        {
+                            "name": "If Condition2",
+                            "type": "IfCondition",
+                            "dependsOn": [
+                                {
+                                    "activity": "FileMetadata",
+                                    "dependencyConditions": [
+                                        "Succeeded"
+                                    ]
+                                }
+                            ],
+                            "userProperties": [],
+                            "typeProperties": {
+                                "expression": {
+                                    "value": "@greater(activity('FileMetadata').output.lastModified,variables('maxtime'))",
+                                    "type": "Expression"
+                                },
+                                "ifTrueActivities": [
+                                    {
+                                        "name": "Set variable1",
+                                        "type": "SetVariable",
+                                        "dependsOn": [],
+                                        "policy": {
+                                            "secureOutput": false,
+                                            "secureInput": false
+                                        },
+                                        "userProperties": [],
+                                        "typeProperties": {
+                                            "variableName": "maxtime",
+                                            "value": {
+                                                "value": "@activity('FileMetaData').output.lastModified\n",
+                                                "type": "Expression"
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "name": "Set variable2",
+                                        "type": "SetVariable",
+                                        "dependsOn": [
+                                            {
+                                                "activity": "Set variable1",
+                                                "dependencyConditions": [
+                                                    "Succeeded"
+                                                ]
+                                            }
+                                        ],
+                                        "policy": {
+                                            "secureOutput": false,
+                                            "secureInput": false
+                                        },
+                                        "userProperties": [],
+                                        "typeProperties": {
+                                            "variableName": "filename",
+                                            "value": {
+                                                "value": "@activity('FileMetaData').output.itemName",
+                                                "type": "Expression"
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "name": "SendFailEmailSMTP",
+                "type": "DatabricksNotebook",
+                "dependsOn": [
+                    {
+                        "activity": "GetMetadata",
+                        "dependencyConditions": [
+                            "Failed"
+                        ]
+                    }
+                ],
+                "policy": {
+                    "timeout": "7.00:00:00",
+                    "retry": 0,
+                    "retryIntervalInSeconds": 30,
+                    "secureOutput": false,
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "notebookPath": "/Shared/SMTPMailSystem/Gen_SMTP_FAILURE_MAIL",
+                    "baseParameters": {
+                        "DataFactoryName": {
+                            "value": "@pipeline().DataFactory",
+                            "type": "Expression"
+                        },
+                        "PipeLineName": {
+                            "value": "@{pipeline().Pipeline}",
+                            "type": "Expression"
+                        },
+                        "FilenameContainer": {
+                            "value": "@pipeline().parameters.containerName",
+                            "type": "Expression"
+                        },
+                        "Message": "The ADF pipeline has crashed in Metadata! Please check the logs",
+                        "errormessage": {
+                            "value": "@{activity('GetMetadata').Error.message}\"",
+                            "type": "Expression"
+                        },
+                        "Subject": "An error has occurred in Metadata activity! in "
+                    }
+                },
+                "linkedServiceName": {
+                    "referenceName": "SBM_MKTG_DB_LINKEDSERVICE",
+                    "type": "LinkedServiceReference"
+                }
+            },
+            {
+                "name": "SendFailEmailSMTP_copy1",
+                "type": "DatabricksNotebook",
+                "dependsOn": [
+                    {
+                        "activity": "Copydata1",
+                        "dependencyConditions": [
+                            "Failed"
+                        ]
+                    }
+                ],
+                "policy": {
+                    "timeout": "7.00:00:00",
+                    "retry": 0,
+                    "retryIntervalInSeconds": 30,
+                    "secureOutput": false,
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "notebookPath": "/Shared/SMTPMailSystem/Gen_SMTP_FAILURE_MAIL",
+                    "baseParameters": {
+                        "DataFactoryName": {
+                            "value": "@pipeline().DataFactory",
+                            "type": "Expression"
+                        },
+                        "PipeLineName": {
+                            "value": "@{pipeline().Pipeline}",
+                            "type": "Expression"
+                        },
+                        "FilenameContainer": {
+                            "value": "@pipeline().parameters.containerName",
+                            "type": "Expression"
+                        },
+                        "Message": "The ADF pipeline has crashed! Please check the logs.",
+                        "errormessage": {
+                            "value": "@{activity('Copydata1').Error.Message}",
+                            "type": "Expression"
+                        },
+                        "Subject": {
+                            "value": "An error has occurred! in @{pipeline().parameters.containerName}",
+                            "type": "Expression"
+                        }
+                    }
+                },
+                "linkedServiceName": {
+                    "referenceName": "SBM_MKTG_DB_LINKEDSERVICE",
+                    "type": "LinkedServiceReference"
+                }
+            }
+        ],
+        "parameters": {
+            "containerName": {
+                "type": "string"
+            },
+            "destinationPath": {
+                "type": "string"
+            },
+            "fileName": {
+                "type": "string"
+            }
+        },
+        "variables": {
+            "maxtime": {
+                "type": "String",
+                "defaultValue": "2020-09-02T00::00:00Z"
+            },
+            "filename": {
+                "type": "String"
+            }
+        },
+        "folder": {
+            "name": "GENERIC"
+        },
+        "annotations": [],
+        "lastPublishTime": "2020-12-10T10:38:15Z"
+    },
+    "type": "Microsoft.DataFactory/factories/pipelines"
+}

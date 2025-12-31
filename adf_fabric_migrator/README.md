@@ -1,0 +1,297 @@
+# ADF Fabric Migrator
+
+A Python library for migrating Azure Data Factory (ADF) and Azure Synapse Analytics pipelines to Microsoft Fabric Data Pipelines.
+
+This library provides the core logic for parsing ADF ARM templates and transforming them to Microsoft Fabric format, without any frontend dependencies.
+
+## Features
+
+- **ARM Template Parsing**: Parse ADF/Synapse ARM templates and extract all components
+- **Pipeline Transformation**: Convert ADF pipelines to Fabric Data Pipeline format
+- **Connector Mapping**: Map ADF LinkedService types to Fabric connector types (50+ connectors)
+- **Activity Transformation**: Transform 20+ activity types with full property mapping
+- **Global Parameter Detection**: Detect and migrate global parameters to Variable Libraries
+- **Dependency Analysis**: Build dependency graphs and generate migration insights
+
+## Installation
+
+```bash
+# From the adf_fabric_migrator directory
+pip install -e .
+```
+
+Or install with development dependencies:
+
+```bash
+pip install -e ".[dev]"
+```
+
+## Quick Start
+
+```python
+from adf_fabric_migrator import ADFParser, PipelineTransformer, ConnectorMapper
+
+# Parse an ARM template
+parser = ADFParser()
+with open("arm_template.json", "r") as f:
+    content = f.read()
+    
+components = parser.parse_arm_template(content)
+print(f"Found {len(components)} components")
+
+# Get component summary
+summary = parser.get_component_summary(components)
+print(f"Pipelines: {summary.by_type.get('pipeline', 0)}")
+print(f"Datasets: {summary.by_type.get('dataset', 0)}")
+print(f"LinkedServices: {summary.by_type.get('linkedService', 0)}")
+
+# Transform a pipeline
+transformer = PipelineTransformer()
+for component in components:
+    if component.type.value == "pipeline":
+        fabric_pipeline = transformer.transform_pipeline_definition(
+            component.definition,
+            component.name
+        )
+        print(f"Transformed pipeline: {component.name}")
+
+# Map connectors
+mapper = ConnectorMapper()
+for component in components:
+    if component.type.value == "linkedService":
+        ls_type = component.definition.get("properties", {}).get("type", "")
+        mapping = mapper.map_connector({"type": ls_type})
+        print(f"{ls_type} -> {mapping.fabric_type} ({mapping.mapping_confidence.value})")
+```
+
+## API Reference
+
+### ADFParser
+
+Parse ADF ARM templates and extract components.
+
+```python
+from adf_fabric_migrator import ADFParser
+
+parser = ADFParser()
+
+# Parse from string
+components = parser.parse_arm_template(json_content)
+
+# Parse from file
+components = parser.parse_arm_template_file("template.json")
+
+# Get component summary
+summary = parser.get_component_summary(components)
+
+# Get components by type
+pipelines = parser.get_components_by_type(ComponentType.PIPELINE)
+
+# Generate comprehensive profile
+profile = parser.generate_profile(components, "template.json", file_size)
+```
+
+### PipelineTransformer
+
+Transform ADF pipelines to Fabric format.
+
+```python
+from adf_fabric_migrator import PipelineTransformer
+
+transformer = PipelineTransformer()
+
+# Set connection mappings
+transformer.set_connection_mappings({
+    "MyAzureSqlLS": "fabric-connection-id-123"
+})
+
+# Transform pipeline
+fabric_definition = transformer.transform_pipeline_definition(
+    adf_definition,
+    pipeline_name="MyPipeline"
+)
+
+# Transform with global parameters
+fabric_definition = transformer.transform_pipeline_with_global_parameters(
+    fabric_definition,
+    global_parameters,
+    library_name="MyFactory_GlobalParameters"
+)
+
+# Generate Fabric API payload
+payload = transformer.generate_fabric_pipeline_payload(fabric_definition)
+```
+
+#### DatabricksNotebook to TridentNotebook Transformation
+
+Enable the transformation of ADF DatabricksNotebook activities to Fabric TridentNotebook format:
+
+```python
+from adf_fabric_migrator import PipelineTransformer
+
+# Enable during initialization
+transformer = PipelineTransformer(enable_databricks_to_trident=True)
+
+# Or toggle at runtime
+transformer.set_databricks_to_trident(True)
+
+# Transform pipeline with DatabricksNotebook activities
+fabric_definition = transformer.transform_pipeline_definition(
+    adf_definition,
+    pipeline_name="MyDatabricksPipeline"
+)
+```
+
+When enabled, this transformation:
+- Changes activity type from `DatabricksNotebook` to `TridentNotebook`
+- Removes `linkedServiceName` and `notebookPath` properties
+- Adds `notebookId` and `workspaceId` placeholders in `typeProperties`
+- Renames `baseParameters` to `parameters`
+- Applies double nesting structure for parameters:
+  ```json
+  {
+    "param": {
+      "value": {
+        "value": "@expression",
+        "type": "Expression"
+      },
+      "type": "Expression"
+    }
+  }
+  ```
+
+### ConnectorMapper
+
+Map ADF LinkedService types to Fabric connectors.
+
+```python
+from adf_fabric_migrator import ConnectorMapper
+
+mapper = ConnectorMapper()
+
+# Map a single connector
+mapping = mapper.map_connector({"type": "AzureBlobStorage"})
+print(mapping.fabric_type)  # "AzureBlobs"
+
+# Validate mapping
+validation = mapper.validate_connector_mapping("AzureSqlDatabase")
+print(validation)  # {"can_map": True, "fabric_type": "SQL", ...}
+
+# Get mapping statistics
+stats = mapper.get_mapping_statistics(["AzureBlobStorage", "SqlServer", "CustomDataSource"])
+print(stats)  # {"total": 3, "supported": 2, "unsupported": 1, ...}
+
+# Check if gateway required
+needs_gateway = mapper.requires_gateway("FileServer")  # True
+```
+
+### GlobalParameterDetector
+
+Detect global parameters in pipelines.
+
+```python
+from adf_fabric_migrator import GlobalParameterDetector
+
+detector = GlobalParameterDetector()
+
+# Detect from components
+refs = detector.detect_global_parameters(components)
+
+# Detect with ARM template fallback
+refs = detector.detect_with_fallback(components, arm_template)
+
+# Get suggested library name
+library_name = detector.get_variable_library_name(arm_template)
+```
+
+## Supported Connectors
+
+The library supports mapping for 50+ ADF connector types including:
+
+- **SQL Databases**: SQL Server, Azure SQL, MySQL, PostgreSQL, Oracle
+- **Azure Storage**: Blob Storage, Data Lake Storage, File Storage
+- **Web/REST**: REST Service, HTTP, OData, Web
+- **Cloud Platforms**: Amazon S3, Google Cloud Storage, Snowflake, Databricks
+- **CRM/ERP**: Dynamics 365, Salesforce, SAP
+
+## Supported Activities
+
+Full transformation support for 20+ activity types:
+
+- **Data Movement**: Copy, Lookup, GetMetadata, Delete
+- **Control Flow**: ExecutePipeline, ForEach, IfCondition, Until, Switch, Wait
+- **External**: Web, WebHook, Azure Function, Custom
+- **Database**: SqlServerStoredProcedure, Script
+- **Compute**: Databricks Notebook, HDInsight, Azure ML
+
+## Data Models
+
+The library provides comprehensive data models for all ADF and Fabric components:
+
+```python
+from adf_fabric_migrator import (
+    ADFComponent,
+    ComponentType,
+    CompatibilityStatus,
+    FabricTarget,
+    GlobalParameterReference,
+    ConnectorMapping,
+    # ... and more
+)
+```
+
+## Sample JSON Templates
+
+The `samples/` directory contains JSON templates for manual API calls:
+
+| File | Description |
+|------|-------------|
+| `sample_adf_arm_template.json` | Sample ADF ARM template (input format) |
+| `sample_fabric_pipeline.json` | Transformed Fabric Data Pipeline definition (output format) |
+| `fabric_api_request_template.json` | Template for the Fabric REST API request |
+
+See [`samples/README.md`](samples/README.md) for detailed usage instructions on how to manually deploy pipelines using the Fabric REST API.
+
+Quick example to deploy a pipeline:
+
+```python
+import base64
+import json
+import requests
+
+# Load the sample Fabric pipeline
+with open("samples/sample_fabric_pipeline.json", "r") as f:
+    pipeline_def = json.load(f)
+
+# Remove metadata comments
+for key in ["_comment", "_api_endpoint", "_documentation"]:
+    pipeline_def.pop(key, None)
+
+# Base64 encode
+payload = base64.b64encode(json.dumps(pipeline_def).encode()).decode()
+
+# Deploy via Fabric API
+response = requests.post(
+    f"https://api.fabric.microsoft.com/v1/workspaces/{workspace_id}/items",
+    headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
+    json={
+        "displayName": "MyPipeline",
+        "type": "DataPipeline",
+        "definition": {
+            "parts": [{
+                "path": "pipeline-content.json",
+                "payload": payload,
+                "payloadType": "InlineBase64"
+            }]
+        }
+    }
+)
+```
+
+## License
+
+MIT License - see the [LICENSE](../LICENSE) file for details.
+
+## Contributing
+
+Contributions are welcome! Please see the main repository's contributing guidelines.
