@@ -2,7 +2,7 @@
 
 ## Current vs. Optimized Architecture
 
-### BEFORE: Baseline Approach ❌
+### BEFORE: Baseline Approach 
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                    AZURE SYNAPSE                             │
@@ -44,7 +44,7 @@ ERROR RECOVERY: Manual
 
 ---
 
-### AFTER: Optimized Approach ✅
+### AFTER: Optimized Approach 
 ```
 ┌──────────────────────────────────────────────────────────────┐
 │                    AZURE SYNAPSE                             │
@@ -99,7 +99,7 @@ ERROR RECOVERY: Automatic with exponential backoff
 
 ## Performance Comparison
 
-### Speed Improvements 🚀
+### Speed Improvements 
 ```
 100 GB Migration Time:
 
@@ -116,10 +116,10 @@ TIER 3:      ██ 45 min - 2 hours           (-75%)
 
 ### Data Validation 📋
 ```
-BASELINE:     ❌ Manual spot-checking
+BASELINE:      Manual spot-checking
               └─ Incomplete & time-consuming
 
-OPTIMIZED:    ✅ Automated 3-level validation
+OPTIMIZED:     Automated 3-level validation
               ├─ Row count verification (100% coverage)
               ├─ Checksum validation (integrity check)
               └─ Sample data comparison (quality check)
@@ -127,10 +127,10 @@ OPTIMIZED:    ✅ Automated 3-level validation
 
 ### Error Recovery 🔧
 ```
-BASELINE:     ❌ Silent failures
+BASELINE:      Silent failures
               └─ Manual retry & troubleshooting
 
-OPTIMIZED:    ✅ Automatic exponential backoff
+OPTIMIZED:     Automatic exponential backoff
               ├─ Retry: 1st attempt
               ├─ Retry: 5 seconds (2^1)
               ├─ Retry: 10 seconds (2^2)
@@ -138,12 +138,12 @@ OPTIMIZED:    ✅ Automatic exponential backoff
               Then fail with detailed logging
 ```
 
-### Visibility 👁️
+### Visibility 
 ```
-BASELINE:     ❌ No tracking
+BASELINE:      No tracking
               └─ "Is it done? Let me check manually..."
 
-OPTIMIZED:    ✅ Real-time dashboard
+OPTIMIZED:     Real-time dashboard
               ├─ Table-by-table progress
               ├─ Current throughput (MB/s)
               ├─ Error rate & details
@@ -398,9 +398,9 @@ Cost: ├─ 25-30% reduction achieved
 ## Files You'll Use
 
 ```
-📦 Optimization Package Contents:
+ Optimization Package Contents:
 
-📄 Documentation (Read in this order):
+ Documentation (Read in this order):
   1. README_OPTIMIZATION_SUMMARY.md          ← Start here
   2. MIGRATION_ANALYSIS_AND_OPTIMIZATION.md  ← Deep dive
   3. IMPLEMENTATION_GUIDE.md                 ← How-to guide
@@ -412,7 +412,7 @@ Cost: ├─ 25-30% reduction achieved
   1. optimization_framework.sql              ← Deploy to source
   2. Optimized-Fabric-Migration.ps1          ← Run migration
 
-📊 Monitoring:
+ Monitoring:
   - Query scripts in IMPLEMENTATION_GUIDE.md
   - Dashboard examples in BEST_PRACTICES.md
 ```
