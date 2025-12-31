@@ -1,8 +1,20 @@
-# 📚 Migration Optimization Documentation - Complete Index
+# 📚 Fabric Migration Documentation - Complete Index
 
 ## 🎯 Start Here
 
-**New to this optimization?** Start with: **[README_OPTIMIZATION_SUMMARY.md](README_OPTIMIZATION_SUMMARY.md)**
+### NEW: Azure Dedicated Pool to Fabric Warehouse (Python + Bash)
+
+**[QUICK_START.md](QUICK_START.md)** ⭐ **START HERE FOR NEW MIGRATIONS**
+- Get started in 15 minutes
+- No PowerShell required
+- Complete datatype handling
+- All permissions documented
+
+**Complete Package:** [MIGRATION_PACKAGE_SUMMARY.md](MIGRATION_PACKAGE_SUMMARY.md)
+
+### Existing: PowerShell-Based Optimization
+
+**[README_OPTIMIZATION_SUMMARY.md](README_OPTIMIZATION_SUMMARY.md)**
 - 5-minute overview
 - Key improvements
 - Quick start instructions
@@ -10,7 +22,34 @@
 
 ---
 
-## 📖 Documentation Map
+## 📖 NEW Migration Documentation (Python + Bash)
+
+## 📖 NEW Migration Documentation (Python + Bash)
+
+### Complete Migration Guides
+
+| Document | Purpose | Size | Best For |
+|----------|---------|------|----------|
+| [MIGRATION_GUIDE.md](MIGRATION_GUIDE.md) | Complete migration process | 576 lines | Everyone |
+| [DATATYPE_MAPPING.md](DATATYPE_MAPPING.md) | Datatype compatibility | 632 lines | DBAs, Developers |
+| [PERMISSIONS_GUIDE.md](PERMISSIONS_GUIDE.md) | Permission setup | 1,079 lines | Admins, Security |
+| [QUICK_START.md](QUICK_START.md) | 15-minute quick start | 204 lines | New users |
+| [MIGRATION_PACKAGE_SUMMARY.md](MIGRATION_PACKAGE_SUMMARY.md) | Package overview | 500 lines | Overview |
+| [scripts/README.md](scripts/README.md) | Script documentation | Detailed | Developers |
+
+### Python + Bash Scripts
+
+| Script | Purpose | Type |
+|--------|---------|------|
+| extract_data.py | Extract from Azure Dedicated Pool | Python (17KB) |
+| load_data.py | Load to Fabric Warehouse | Python (27KB) |
+| validate_migration.py | Validate migration | Python (13KB) |
+| setup_environment.sh | Environment setup | Bash (3.6KB) |
+| pre_migration_checks.sh | Pre-migration validation | Bash (5.6KB) |
+
+---
+
+## 📖 Existing Documentation (PowerShell-Based)
 
 ### 1. Executive Summaries
 
