@@ -1,0 +1,23 @@
+# Python requirements for Azure Synapse to Fabric Warehouse Migration
+# Install with: pip install -r requirements.txt
+
+# Azure SDK
+azure-identity>=1.15.0
+azure-storage-blob>=12.19.0
+azure-core>=1.29.0
+
+# Database connectivity
+pyodbc>=5.0.1
+
+# Data manipulation
+pandas>=2.1.0
+
+# Environment management
+python-dotenv>=1.0.0
+
+# CLI utilities
+colorama>=0.4.6
+
+# Optional: For advanced features
+# sqlalchemy>=2.0.0
+# openpyxl>=3.1.0  # For Excel export
