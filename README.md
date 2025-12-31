@@ -51,6 +51,19 @@ python3 validate_migration.py \
 
 See [scripts/README.md](scripts/README.md) for detailed documentation.
 
+### Migration Notebooks (PySpark)
+
+**New!** Interactive PySpark notebooks for running migration steps in Fabric:
+
+All migration notebooks are located in the [`/notebooks`](notebooks/) directory:
+
+- **[01_extract_data.ipynb](notebooks/01_extract_data.ipynb)** - Extract data from Azure Synapse to ADLS
+- **[02_load_data.ipynb](notebooks/02_load_data.ipynb)** - Load data from ADLS to Fabric Warehouse
+- **[03_validate_migration.ipynb](notebooks/03_validate_migration.ipynb)** - Validate migration completeness
+- **[Helper Functions](notebooks/utils/migration_helpers.py)** - Shared utilities for connections and operations
+
+See [notebooks/README.md](notebooks/README.md) for detailed documentation on running notebooks in Fabric.
+
 ---
 
 ## From Azure Synapse to Fabric
@@ -58,6 +71,7 @@ See [scripts/README.md](scripts/README.md) for detailed documentation.
 ### Data Warehouse
 
 - **[NEW] [Comprehensive Migration Guide](MIGRATION_GUIDE.md)** - Complete guide with scripts
+- **[NEW] [PySpark Notebooks](notebooks/README.md)** - Interactive notebooks for Fabric
 - **[NEW] [Data Type Mapping Guide](DATATYPE_MAPPING.md)** - Datatype compatibility reference
 - **[NEW] [Permissions Guide](PERMISSIONS_GUIDE.md)** - Security and access setup
 - [Official Microsoft documentation](https://aka.ms/fabric-migrate-synapse-dw)
