@@ -7,9 +7,10 @@ This repository contains a collection of scripts and utilities designed to assis
 **New!** Complete migration guide with Python/Bash scripts (no PowerShell required):
 
 1. **[📘 Migration Guide](MIGRATION_GUIDE.md)** - Comprehensive step-by-step guide
-2. **[🔄 Data Type Mapping](DATATYPE_MAPPING.md)** - Handle datatype differences between platforms
-3. **[🔐 Permissions Guide](PERMISSIONS_GUIDE.md)** - Setup all required permissions
-4. **[⚡ Quick Start](QUICK_START.md)** - Get started in 15 minutes
+2. **[📚 ETL Library Documentation](MSCLAKE_ETL_DOCUMENTATION.md)** - Complete API reference for Migration Scripts ETL Library
+3. **[🔄 Data Type Mapping](DATATYPE_MAPPING.md)** - Handle datatype differences between platforms
+4. **[🔐 Permissions Guide](PERMISSIONS_GUIDE.md)** - Setup all required permissions
+5. **[⚡ Quick Start](QUICK_START.md)** - Get started in 15 minutes
 
 ### Migration Scripts (Python + Bash)
 
@@ -63,6 +64,25 @@ All migration notebooks are located in the [`/notebooks`](notebooks/) directory:
 - **[Helper Functions](notebooks/utils/migration_helpers.py)** - Shared utilities for connections and operations
 
 See [notebooks/README.md](notebooks/README.md) for detailed documentation on running notebooks in Fabric.
+
+### Migration Scripts ETL Library
+
+**New!** Comprehensive documentation for the Python ETL library powering the migration scripts:
+
+**[📚 ETL Library Documentation](MSCLAKE_ETL_DOCUMENTATION.md)** - Complete API reference covering:
+- **DataExtractor** - Extract data from Synapse to ADLS Gen2 using CETAS
+- **DataLoader** - Load data from ADLS Gen2 to Fabric Warehouse using COPY INTO
+- **MigrationValidator** - Validate row counts and data integrity
+- **ConnectionHelper** - Database connection utilities for PySpark notebooks
+- **MigrationUtils** - Common migration operations and helpers
+- **StorageHelper** - Azure Data Lake Storage operations
+
+The documentation includes:
+- Architecture and design patterns
+- Complete API reference for all classes and methods
+- Usage examples (CLI, Python scripts, PySpark notebooks)
+- Best practices for performance, security, and monitoring
+- Comprehensive troubleshooting guide
 
 ---
 
